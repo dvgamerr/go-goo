@@ -1,11 +1,11 @@
 [Unit]
-Description=gitmoo-goog
+Description=go-goo
 
 [Service]
 Type=simple
 Restart=always
 RestartSec=30
-ExecStart=/usr/local/bin/gitmoo-goog -folder /var/photos -loop
+ExecStart=/usr/local/bin/go-goo -folder /var/photos -loop
 StandardOutput=journal
 
 [Install]

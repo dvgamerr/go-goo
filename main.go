@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
@@ -13,8 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dtylman/gitmoo-goog/downloader"
-	"github.com/dtylman/gitmoo-goog/version"
+	"github.com/dvgamerr/go-goo/downloader"
+	"github.com/dvgamerr/go-goo/version"
 	photoslibrary "github.com/gphotosuploader/googlemirror/api/photoslibrary/v1"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -116,7 +115,7 @@ func saveToken(path string, token *oauth2.Token) {
 }
 
 func process(downloader *downloader.Downloader) error {
-	b, err := ioutil.ReadFile(downloader.Options.CredentialsFile)
+	b, err := os.ReadFile(downloader.Options.CredentialsFile)
 	if err != nil {
 		log.Println("Enable photos API here: https://developers.google.com/photos/library/guides/get-started#enable-the-api")
 		return fmt.Errorf("Unable to read client secret file: %v", err)
@@ -155,7 +154,7 @@ func main() {
 	flag.BoolVar(&options.loop, "loop", false, "loops forever (use as daemon)")
 	flag.BoolVar(&options.ignoreerrors, "force", false, "ignore errors, and force working")
 	flag.StringVar(&options.logfile, "logfile", "", "log to this file")
-	flag.BoolVar(&options.version, "version", false, "at startup, print the gitmoo-goog version")
+	flag.BoolVar(&options.version, "version", false, "at startup, print the go-goo version")
 	flag.StringVar(&downloader.Options.BackupFolder, "folder", workingDirectory, "backup folder")
 	flag.StringVar(&downloader.Options.AlbumID, "album", "", "download only from this album (use google album id)")
 	flag.IntVar(&downloader.Options.MaxItems, "max", math.MaxInt32, "max items to download")
@@ -185,7 +184,7 @@ func main() {
 	}
 
 	if options.version {
-		log.Println("This is gitmoo-goog ver", version.Version)
+		log.Println("This is go-goo ver", version.Version)
 	}
 
 	err := process(downloader)

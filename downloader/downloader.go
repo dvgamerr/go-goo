@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime"
 	"net/http"
@@ -151,7 +150,7 @@ func (d *Downloader) loadJSON(filePath string) (*LibraryItem, error) {
 	info, err := os.Stat(filePath)
 
 	if err == nil && info != nil {
-		bytes, err := ioutil.ReadFile(filePath)
+		bytes, err := os.ReadFile(filePath)
 		if err != nil {
 			return nil, err
 		}
@@ -180,7 +179,7 @@ func (d *Downloader) createJSON(item *LibraryItem, filePath string) error {
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile(filePath, bytes, 0644)
+		return os.WriteFile(filePath, bytes, 0644)
 	}
 	return nil
 }
@@ -248,7 +247,7 @@ func (d *Downloader) createImage(item *LibraryItem, filePath string) error {
 	_, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
 		//Touch file before downloading (to avoid file name conflicts)
-		err := ioutil.WriteFile(filePath, []byte{}, 0644)
+		err := os.WriteFile(filePath, []byte{}, 0644)
 		if err != nil {
 			return err
 		}

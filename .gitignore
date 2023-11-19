@@ -14,16 +14,8 @@
 *.out
 credentials.json
 token.json
-gitmoo-goog
-gitmoo-goog.exe
-gitmoo-goog.bz2
-gitmoo-goog.zip
+bin/*
 
 # photos that were downloaded 
-202*
-201*
-199*
-
-
-installer/installer
-installer/*.deb
+20*
+19*

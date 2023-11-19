@@ -2,7 +2,6 @@ package downloader
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"mime"
 	"os"
 	"path/filepath"
@@ -13,7 +12,7 @@ import (
 
 // tempPath Create a temporary path (must be removed after)
 func tempPath() string {
-	path, _ := ioutil.TempDir("", "gitmoo-goog-test")
+	path, _ := os.MkdirTemp("", "go-goo-test")
 	return path
 }
 
@@ -201,7 +200,7 @@ func TestIsConflictingFilePath(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
-		err = ioutil.WriteFile(path, []byte{}, 0644)
+		err = os.WriteFile(path, []byte{}, 0644)
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
