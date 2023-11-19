@@ -8,11 +8,11 @@ It can be used as a daemon to keep in sync with a google-photos account.
 
 ## Build
 
-![Go](https://github.com/dvgamerr/goog/workflows/Go/badge.svg)
+[![Go](https://github.com/dvgamerr/go-goog/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/dvgamerr/go-goog/actions/workflows/build.yml)
 
 ## Downloading and Installing:
 
-* Go to[Latest](https://github.com/dvgamerr/goog/releases/latest) release.
+* Go to[Latest](https://github.com/dvgamerr/go-goog/releases/latest) release.
 * Download goog.zip
 
 Unzip and run, there are no other dependencies.
@@ -123,13 +123,13 @@ To build you may need to specify that module download mode is using a vendor fol
 You can run goog in Docker. At the moment you have to build the image yourself. After cloning the repo run:
 
 ```
-$ docker build -t dvgamerr/goog:latest .
+$ docker build -t dvgamerr/go-goog:latest .
 ```
 
 Now run gitmoo-goo in Docker:
 
 ```
-$ docker run -v $(pwd):/app --user=$(id -u):$(id -g) dvgamerr/goog:latest
+$ docker run -v $(pwd):/app --user=$(id -u):$(id -g) dvgamerr/go-goog:latest
 ```
 
 Replace `$(pwd)` with the location of your storage directory on your computer.
@@ -139,5 +139,5 @@ The part `--user=$(id -u):$(id -g)` ensures that the downloaded files are owned 
 
 Configuring additional settings is possible by adding command arguments like so:
 ```
-$ docker run -v $(pwd):/app --user=$(id -u):$(id -g) dvgamerr/goog:latest -loop -throttle 45
+$ docker run -v $(pwd):/app --user=$(id -u):$(id -g) dvgamerr/go-goog:latest -loop -throttle 45
 ```
