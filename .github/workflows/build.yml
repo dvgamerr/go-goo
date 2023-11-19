@@ -1,0 +1,55 @@
+name: Go
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - "v*"
+    paths:
+      - "**.go"
+      - "**.mod"
+      - "**.sum"
+      - "!.github/workflows/build.yml"
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    env: 
+      CGO_ENABLED: "0"
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Golang
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.21
+        # go-version: ${{ matrix.go-version }}
+
+    - name: Caches
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ubuntu-golang-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ubuntu-golang-
+        # key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
+        # restore-keys: |
+        #   ${{ runner.os }}-golang-
+    - name: Recheck Compiler
+      if: contains(github.event_name, 'pull_request')
+      run: |
+        mkdir -p ./bin
+        go build -ldflags "-s -w" -o ./bin/goo .
+
+    - name: Releaser
+      if: success() && !contains(github.ref, 'main') && !contains(github.event_name, 'pull_request')
+      uses: goreleaser/goreleaser-action@v4
+      with:
+        distribution: goreleaser
+        version: latest
+        args: release --clean
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
