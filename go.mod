@@ -1,4 +1,4 @@
-module goo
+module goog
 
 go 1.21
 

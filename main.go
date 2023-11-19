@@ -12,8 +12,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dvgamerr/go-goo/downloader"
-	"github.com/dvgamerr/go-goo/version"
+	"goog/downloader"
+	"goog/version"
+
 	photoslibrary "github.com/gphotosuploader/googlemirror/api/photoslibrary/v1"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"

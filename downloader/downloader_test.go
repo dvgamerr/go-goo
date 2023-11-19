@@ -12,7 +12,7 @@ import (
 
 // tempPath Create a temporary path (must be removed after)
 func tempPath() string {
-	path, _ := os.MkdirTemp("", "go-goo-test")
+	path, _ := os.MkdirTemp("", "go-goog-test")
 	return path
 }
 

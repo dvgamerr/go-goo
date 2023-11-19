@@ -4,7 +4,7 @@ package main
 // 	"fmt"
 // 	"os"
 
-// 	"github.com/dvgamerr/go-goo/version"
+// 	"github.com/dvgamerr/go-goog/version"
 // )
 
 // var options struct {
@@ -16,7 +16,7 @@ package main
 // }
 
 // func init() {
-// 	options.Name = "go-goo"
+// 	options.Name = "goog"
 // 	options.Branch = os.Getenv("CIRCLE_BRANCH")
 // 	options.BuildNum = os.Getenv("CIRCLE_BUILD_NUM")
 // 	options.Arch = "amd64"
@@ -34,11 +34,11 @@ package main
 
 // 	d.Info.Maintainer = "dvgamerr@gmail.com"
 // 	d.Info.Section = "base"
-// 	d.Info.Homepage = "https://github.com/dvgamerr/go-goo"
+// 	d.Info.Homepage = "https://github.com/dvgamerr/goog"
 // 	d.Info.Description = `A Google Photos backup tool. `
 // 	files := map[string]string{
-// 		"../go-goo":      "/usr/local/bin/go-goo",
-// 		"go-goo.service": "/etc/systemd/system/go-goo.service",
+// 		"../goog":      "/usr/local/bin/goog",
+// 		"goog.service": "/etc/systemd/system/goog.service",
 // 	}
 
 // 	for source, target := range files {
