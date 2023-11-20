@@ -38,7 +38,7 @@ func NewDownloader() *Downloader {
 
 	downloader.Options = new(Options)
 	downloader.Options.BackupFolder, _ = os.Getwd()
-	downloader.Options.FolderFormat = filepath.Join("2006", "January")
+	downloader.Options.FolderFormat = filepath.Join("2006", "01-January")
 	downloader.Options.ConcurrentDownloads = 1
 
 	return downloader
@@ -52,7 +52,7 @@ func (d *Downloader) getFolderPath(item *photoslibrary.MediaItem) string {
 		//Default to an epoch if cannot parse time
 		t, err = time.Parse(time.RFC3339, "1970-01-01T00:00:00Z")
 	}
-
+	fmt.Println("d.Options.FolderFormat", d.Options.FolderFormat)
 	return filepath.Join(d.Options.BackupFolder, t.Format(d.Options.FolderFormat))
 }
 
