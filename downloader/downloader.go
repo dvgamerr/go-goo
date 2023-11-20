@@ -21,6 +21,8 @@ import (
 	errgroup "golang.org/x/sync/errgroup"
 )
 
+var googJsonDir string = ".goog"
+
 // Downloader Struct for downloading photos into managed folders, use factory
 // method `NewDownloader` to create
 type Downloader struct {
@@ -45,15 +47,14 @@ func NewDownloader() *Downloader {
 }
 
 // getFolderPath Path of the to store JSON and image files for the particular MediaItem
-func (d *Downloader) getFolderPath(item *photoslibrary.MediaItem) string {
+func (d *Downloader) getFolderPath(subdir string, item *photoslibrary.MediaItem) string {
 	//TODO Check that item.MediaMetadata exists
 	t, err := time.Parse(time.RFC3339, item.MediaMetadata.CreationTime)
 	if err != nil {
 		//Default to an epoch if cannot parse time
 		t, err = time.Parse(time.RFC3339, "1970-01-01T00:00:00Z")
 	}
-	fmt.Println("d.Options.FolderFormat", d.Options.FolderFormat)
-	return filepath.Join(d.Options.BackupFolder, t.Format(d.Options.FolderFormat))
+	return filepath.Join(d.Options.BackupFolder, subdir, t.Format(d.Options.FolderFormat))
 }
 
 // createFileName Get the full path to the image file including what conflict position we are at
@@ -77,7 +78,7 @@ func (d *Downloader) isConflictingFilePath(item *LibraryItem) bool {
 
 // getLegacyPrefixFilePathByTime Build a file path based on the image creation
 // time, file extension will need to be appened after
-func (d *Downloader) getLegacyPrefixFilePathByTime(item *photoslibrary.MediaItem) (string, error) {
+func (d *Downloader) getLegacyPrefixFilePathByTime(subdir string, item *photoslibrary.MediaItem) (string, error) {
 	//TODO check that item.MediaMetadata and item.Id exist
 	t, err := time.Parse(time.RFC3339, item.MediaMetadata.CreationTime)
 	if err != nil {
@@ -85,27 +86,27 @@ func (d *Downloader) getLegacyPrefixFilePathByTime(item *photoslibrary.MediaItem
 	}
 	//TODO Assuming item.Id is over a certain length without checking
 	name := fmt.Sprintf("%v_%v", t.Day(), item.Id[len(item.Id)-8:])
-	return filepath.Join(d.getFolderPath(item), name), nil
+	return filepath.Join(d.getFolderPath(subdir, item), name), nil
 }
 
 // getLegacyPrefixFilePathByHash Build a file path when missing a image
 // creation time based on a MD5 hash of the Media Item ID, file extension will
 // need to be appened after
-func (d *Downloader) getLegacyPrefixFilePathByHash(item *photoslibrary.MediaItem) string {
+func (d *Downloader) getLegacyPrefixFilePathByHash(subdir string, item *photoslibrary.MediaItem) string {
 	hasher := md5.New()
 	hasher.Write([]byte(item.Id))
 	hash := hex.EncodeToString(hasher.Sum(nil))
-	return filepath.Join(d.Options.BackupFolder, hash[:4], hash[4:8], hash[8:])
+	return filepath.Join(d.Options.BackupFolder, subdir, hash[:4], hash[4:8], hash[8:])
 }
 
 // getLegacyPrefixFilePath Build a file path based on legacy naming convention
 // of using Media Item ID, file extension will need to be appened after
-func (d *Downloader) getLegacyPrefixFilePath(item *photoslibrary.MediaItem) string {
+func (d *Downloader) getLegacyPrefixFilePath(subdir string, item *photoslibrary.MediaItem) string {
 	//Legacy file names
-	fileName, err := d.getLegacyPrefixFilePathByTime(item)
+	fileName, err := d.getLegacyPrefixFilePathByTime(subdir, item)
 	if err != nil {
 		//Must return since this provides its own folder paths
-		fileName = d.getLegacyPrefixFilePathByHash(item)
+		fileName = d.getLegacyPrefixFilePathByHash(subdir, item)
 	}
 
 	return fileName
@@ -121,9 +122,9 @@ func (d *Downloader) getImageFilePath(item *LibraryItem) string {
 			fileName = item.Filename
 		}
 
-		fileName = filepath.Join(d.getFolderPath(&item.MediaItem), fileName)
+		fileName = filepath.Join(d.getFolderPath("", &item.MediaItem), fileName)
 	} else {
-		fileName = d.getLegacyPrefixFilePath(&item.MediaItem)
+		fileName = d.getLegacyPrefixFilePath("", &item.MediaItem)
 
 		//Append the file extension based on the mime type
 		ext, _ := mime.ExtensionsByType(item.MimeType)
@@ -139,10 +140,10 @@ func (d *Downloader) getImageFilePath(item *LibraryItem) string {
 func (d *Downloader) getJSONFilePath(item *photoslibrary.MediaItem) string {
 	if d.Options.UseFileName {
 		//TODO item.Id could be missing
-		return filepath.Join(d.getFolderPath(item), "."+item.Id+".json")
+		return filepath.Join(d.getFolderPath(googJsonDir, item), "."+item.Id+".json")
 	}
 
-	return d.getLegacyPrefixFilePath(item) + ".json"
+	return d.getLegacyPrefixFilePath(googJsonDir, item) + ".json"
 }
 
 // loadJSON Load the JSON file into LibraryItem
@@ -246,6 +247,11 @@ func (d *Downloader) downloadImage(item *LibraryItem, filePath string) error {
 func (d *Downloader) createImage(item *LibraryItem, filePath string) error {
 	_, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
+		err = os.MkdirAll(filepath.Dir(filePath), 0700)
+		if err != nil {
+			return err
+		}
+
 		//Touch file before downloading (to avoid file name conflicts)
 		err := os.WriteFile(filePath, []byte{}, 0644)
 		if err != nil {
