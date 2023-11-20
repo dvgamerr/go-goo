@@ -12,8 +12,12 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
+require github.com/alexflint/go-scalar v1.1.0 // indirect
+
 require (
 	cloud.google.com/go v0.38.0 // indirect
+	github.com/alexflint/go-arg v1.4.3
+	github.com/barasher/go-exiftool v1.10.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c // indirect
 	google.golang.org/api v0.19.0 // indirect
