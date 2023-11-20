@@ -41,8 +41,8 @@ func TestGetFolderPath(t *testing.T) {
 		item := new(photoslibrary.MediaItem)
 		item.MediaMetadata = new(photoslibrary.MediaMetadata)
 
-		have := downloader.getFolderPath(item)
-		want := filepath.Join(downloader.Options.BackupFolder, "1970", "January")
+		have := downloader.getFolderPath("", item)
+		want := filepath.Join(downloader.Options.BackupFolder, "1970", "01-January")
 		if have != want {
 			t.Errorf("downloader.getFolderPath() = %v; want %v", have, want)
 		}
@@ -57,8 +57,8 @@ func TestGetFolderPath(t *testing.T) {
 		item.MediaMetadata = new(photoslibrary.MediaMetadata)
 		item.MediaMetadata.CreationTime = "2019-10-13T17:33:43Z"
 
-		have := downloader.getFolderPath(item)
-		want := filepath.Join(downloader.Options.BackupFolder, "2019", "October")
+		have := downloader.getFolderPath("", item)
+		want := filepath.Join(downloader.Options.BackupFolder, "2019", "10-October")
 		if have != want {
 			t.Errorf("downloader.getFolderPath() = %v; want %v", have, want)
 		}
@@ -74,7 +74,7 @@ func TestGetFolderPath(t *testing.T) {
 		item.MediaMetadata = new(photoslibrary.MediaMetadata)
 		item.MediaMetadata.CreationTime = "2019-10-13T17:33:43Z"
 
-		have := downloader.getFolderPath(item)
+		have := downloader.getFolderPath("", item)
 		want := filepath.Join(downloader.Options.BackupFolder, "2019", "10")
 		if have != want {
 			t.Errorf("downloader.getFolderPath() = %v; want %v", have, want)
@@ -237,7 +237,7 @@ func TestGetJSONFilePath(t *testing.T) {
 		item.MediaMetadata = new(photoslibrary.MediaMetadata)
 
 		have := downloader.getJSONFilePath(item)
-		want := filepath.Join(downloader.Options.BackupFolder, "fd85", "e62d", "9beb45428771ec688418b271.json")
+		want := filepath.Join(downloader.Options.BackupFolder, GooGJSONDir, "fd85", "e62d", "9beb45428771ec688418b271.json")
 
 		if have != want {
 			t.Errorf("downloader.getJSONFilePath() = %v; want %v", have, want)
@@ -255,7 +255,7 @@ func TestGetJSONFilePath(t *testing.T) {
 		item.MediaMetadata.CreationTime = "2019-10-13T17:33:43Z"
 
 		have := downloader.getJSONFilePath(item)
-		want := filepath.Join(downloader.Options.BackupFolder, "2019", "October", "13_34567890.json")
+		want := filepath.Join(downloader.Options.BackupFolder, GooGJSONDir, "2019", "10-October", "13_34567890.json")
 
 		if have != want {
 			t.Errorf("downloader.getJSONFilePath() = %v; want %v", have, want)
@@ -274,7 +274,7 @@ func TestGetJSONFilePath(t *testing.T) {
 		item.MediaMetadata.CreationTime = "2019-10-13T17:33:43Z"
 
 		have := downloader.getJSONFilePath(item)
-		want := filepath.Join(downloader.Options.BackupFolder, "2019", "October", ".12345678901234567890.json")
+		want := filepath.Join(downloader.Options.BackupFolder, GooGJSONDir, "2019", "10-October", ".12345678901234567890.json")
 
 		if have != want {
 			t.Errorf("downloader.getJSONFilePath() = %v; want %v", have, want)

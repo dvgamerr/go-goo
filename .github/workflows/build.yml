@@ -43,7 +43,8 @@ jobs:
       if: contains(github.event_name, 'pull_request')
       run: |
         mkdir -p ./bin
-        go build -ldflags "-s -w" -o ./bin/goo .
+        go test .\downloader\.
+        go build -ldflags "-s -w" .
 
     - name: Releaser
       if: success() && !contains(github.ref, 'main') && !contains(github.event_name, 'pull_request')

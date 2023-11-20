@@ -21,7 +21,7 @@ import (
 	errgroup "golang.org/x/sync/errgroup"
 )
 
-var googJsonDir string = ".goog"
+var GooGJSONDir string = ".goog"
 
 // Downloader Struct for downloading photos into managed folders, use factory
 // method `NewDownloader` to create
@@ -140,10 +140,10 @@ func (d *Downloader) getImageFilePath(item *LibraryItem) string {
 func (d *Downloader) getJSONFilePath(item *photoslibrary.MediaItem) string {
 	if d.Options.UseFileName {
 		//TODO item.Id could be missing
-		return filepath.Join(d.getFolderPath(googJsonDir, item), "."+item.Id+".json")
+		return filepath.Join(d.getFolderPath(GooGJSONDir, item), "."+item.Id+".json")
 	}
 
-	return d.getLegacyPrefixFilePath(googJsonDir, item) + ".json"
+	return d.getLegacyPrefixFilePath(GooGJSONDir, item) + ".json"
 }
 
 // loadJSON Load the JSON file into LibraryItem
