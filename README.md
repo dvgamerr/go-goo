@@ -1,14 +1,32 @@
-# goog
+<div align="center">
+  <h1>A Google Photos backup tool.</h1>
+  <p>
+    <a href="https://github.com/dvgamerr/go-goog/actions/workflows/build.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/dvgamerr/go-goog/build.yml?label=Build&amp;style=flat-square" alt="GitHub Build Action Status">
+    </a>
+    <a href="https://github.com/dvgamerr/go-goog/actions/workflows/codeql.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/dvgamerr/go-goog/codeql.yml?label=CodeQL&amp;style=flat-square" alt="GitHub Build Action Status">
+    </a>
+    <a href="https://github.com/dvgamerr/go-goog/actions/workflows/review.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/dvgamerr/go-goog/review.yml?label=Dependency&amp;style=flat-square" alt="GitHub Build Action Status">
+    </a>
+    <a href="https://goreportcard.com/report/dvgamerr/go-goog">
+      <img src="https://goreportcard.com/badge/dvgamerr/go-goog?style=flat-square">
+    </a>
+    <img src="https://img.shields.io/tokei/lines/github/dvgamerr/go-kooky?style=flat-square">
+    <br>
+    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square">
+    <a href="LICENSE.md">
+      <img src="https://img.shields.io/github/license/dvgamerr/go-goog?style=flat-square" alt="LICENSE">
+    </a>
+    <a href="https://github.com/dvgamerr/go-goog/releases/latest">
+      <img src="https://img.shields.io/github/release-date/dvgamerr/go-goog?style=flat-square">
+    </a>
+  </p>
+  <p><code>goog</code> tool uses <a href="https://developers.google.com/photos/library/guides/get-started#enable-the-api" target="_blank">Google Photos API</a> to continously download all photos on a local device.</p>
+</div>
 
-A [Google Photos](http://photos.google.com/) backup tool.
-
-`goog` tool uses [Google Photos API](https://developers.google.com/photos/library/guides/get-started#enable-the-api) to continously download all photos on a local device.
-
-It can be used as a daemon to keep in sync with a google-photos account.
-
-## Build
-
-[![Go](https://github.com/dvgamerr/go-goog/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/dvgamerr/go-goog/actions/workflows/build.yml)
+**Fork**: [dtylman](https://github.com/dtylman/gitmoo-goog)
 
 ## Downloading and Installing:
 
@@ -38,7 +56,7 @@ The zip contains Windows, Linux and MAC OS binaries.
 * Sign in, and click `Allow`.
 * You will be redirected to a local address and it `This browser window can be now closed...`.
 * `goog` will authorize and start downloading content (authorization code will be automically received). 
-```
+```bash
 $ ./goog
 2018/09/12 10:18:07 This is goog ver 0.1
 Go to the following link in your browser then type the authorization code:
@@ -94,7 +112,7 @@ Usage of ./goog:
 
 On Linux, running the following is a good practice:
 
-```
+```bash
 $ ./goog -folder archive -logfile gitmoo.log -use-file-name -include-exif -loop -throttle 45 &
 ```
 
@@ -122,13 +140,13 @@ To build you may need to specify that module download mode is using a vendor fol
 
 You can run goog in Docker. At the moment you have to build the image yourself. After cloning the repo run:
 
-```
+```bash
 $ docker build -t dvgamerr/go-goog:latest .
 ```
 
 Now run gitmoo-goo in Docker:
 
-```
+```bash
 $ docker run -v $(pwd):/app --user=$(id -u):$(id -g) dvgamerr/go-goog:latest
 ```
 
@@ -138,6 +156,6 @@ Within the storage directory goog expects the `credentials.json` and will place 
 The part `--user=$(id -u):$(id -g)` ensures that the downloaded files are owned by the user launching the container.
 
 Configuring additional settings is possible by adding command arguments like so:
-```
+```bash
 $ docker run -v $(pwd):/app --user=$(id -u):$(id -g) dvgamerr/go-goog:latest -loop -throttle 45
 ```
