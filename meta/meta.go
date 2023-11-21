@@ -7,6 +7,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -16,9 +18,12 @@ import (
 )
 
 type Options struct {
-	Grouping bool   `arg:"-g,--group"`
-	Write    bool   `arg:"-w,--write"`
-	Dir      string `arg:"positional" default:"."`
+	IsList          bool   `arg:"-l"`
+	IsGroupFolder   bool   `arg:"-g"`
+	IsUngroupFolder bool   `arg:"--ug"`
+	IsWrite         bool   `arg:"-w,--write"`
+	FillDate        string `arg:"-d,--date"`
+	Dir             string `arg:"positional" default:"."`
 }
 
 var flag Options
@@ -45,30 +50,44 @@ func main() {
 	defer et.Close()
 
 	if finfo.IsDir() {
-		err := filepath.WalkDir(flagDirName, walk(et))
+		err := filepath.WalkDir(flagDirName, walk(et, flag))
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}
 
-		fmt.Printf("done")
-		if flag.Write {
-			fmt.Printf(", rewrited")
-		}
-		fmt.Println(".")
 	} else {
-		printOriginalDate(et.ExtractMetadata(flagDirName))
+		extractOneFileOriginalDate(et, et.ExtractMetadata(flagDirName), flag.FillDate)
 	}
+	fmt.Printf("done")
+	if flag.IsWrite {
+		fmt.Printf(", rewrited")
+	}
+	fmt.Println(".")
 
 }
 
-// var allowExt []string = []string{".jpg", ".jpeg", ".mp4", ".heic", ".png", ".mov"}
+var allowExt []string = []string{".jpg", ".jpeg", ".mp4", ".heic", ".png", ".mov", ".webp"}
 
-func walk(et *exiftool.Exiftool) func(s string, d fs.DirEntry, err error) error {
+func walk(et *exiftool.Exiftool, flag Options) func(s string, d fs.DirEntry, err error) error {
 	return func(s string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if !d.IsDir() {
+
+		if !d.IsDir() && slices.Contains(allowExt, strings.ToLower(path.Ext(d.Name()))) {
+			if flag.IsUngroupFolder {
+				err := os.Rename(s, path.Join(flag.Dir, d.Name()))
+				if err != nil {
+					fmt.Printf("   X %v\n", err)
+				}
+
+				// err = os.Remove(filepath.Dir(s))
+				// if err != nil {
+				// 	fmt.Printf("   X %v\n", err)
+				// }
+				return nil
+			}
+
 			fileInfos := et.ExtractMetadata(s)
 
 			for i := range fileInfos {
@@ -82,41 +101,72 @@ func walk(et *exiftool.Exiftool) func(s string, d fs.DirEntry, err error) error 
 				fileName := strings.ReplaceAll(d.Name(), path.Ext(d.Name()), "")
 				prefixDate := strings.ReplaceAll(dateOriginal[:7], ":", "-")
 
-				if len(filepath.Base(filepath.Dir(s))) >= 7 {
-					if prefixDate != filepath.Base(filepath.Dir(s))[:7] {
-						dateLayout := "2006:01:02 15:04:05-07:00"
-						location, _ := time.LoadLocation("Asia/Bangkok")
+				dateLayout := "2006:01:02 15:04:05-07:00"
+				location, _ := time.LoadLocation("Asia/Bangkok")
 
-						i, err := strconv.ParseInt(fileName, 10, 64)
-						if err == nil {
-							dateOriginal = time.UnixMilli(i).In(location).Format(dateLayout)
-						}
-					}
-
-					prefixDate := strings.ReplaceAll(dateOriginal[:7], ":", "-")
-					if prefixDate != filepath.Base(filepath.Dir(s))[:7] {
-						fmt.Printf(" - [%s>%s] >> %s\\%s\n", prefixDate, filepath.Base(filepath.Dir(s))[:7], filepath.Base(filepath.Dir(s)), d.Name())
+				var fbReg = regexp.MustCompile(`(?m)20\d{6}[-_]\d{6}`)
+				var tsReg = regexp.MustCompile(`(?m)\d{13}`)
+				i, err := strconv.ParseInt(string(tsReg.Find([]byte(fileName))), 10, 64)
+				if err == nil {
+					if time.UnixMilli(i).Year() <= time.Now().Year() {
+						dateOriginal = time.UnixMilli(i).In(location).Format(dateLayout)
+						prefixDate = strings.ReplaceAll(dateOriginal[:7], ":", "-")
 					}
 				}
-				if flag.Write {
-					for k := range fileInfo.Fields {
-						if strings.Contains(k, "Date") {
-							fileInfo.Fields[k] = dateOriginal
-						}
-					}
-					fileInfo.Fields["DateTimeOriginal"] = dateOriginal
+
+				tsFileName := regexp.MustCompile(`[-_]`).ReplaceAllString(string(fbReg.Find([]byte(fileName))), "-")
+				t, err := time.Parse("20060102-150405", tsFileName)
+				if err == nil {
+					dateOriginal = t.In(location).Format(dateLayout)
+					prefixDate = strings.ReplaceAll(dateOriginal[:7], ":", "-")
+				}
+
+				if flag.IsGroupFolder {
+					os.Mkdir(path.Join(filepath.Dir(s), prefixDate), 0700)
+					os.Rename(s, path.Join(filepath.Dir(s), prefixDate, d.Name()))
+				}
+				// if len(filepath.Base(filepath.Dir(s))) >= 7 {
+				// 	if prefixDate != filepath.Base(filepath.Dir(s))[:7] {
+				// 		dateLayout := "2006:01:02 15:04:05-07:00"
+				// 		location, _ := time.LoadLocation("Asia/Bangkok")
+
+				// 		var re = regexp.MustCompile(`(?m)\d{13}`)
+				// 		i, err := strconv.ParseInt(string(re.Find([]byte(fileName))), 10, 64)
+				// 		if err == nil {
+				// 			dateOriginal = time.UnixMilli(i).In(location).Format(dateLayout)
+				// 		}
+				// 	}
+
+				// 	prefixDate := strings.ReplaceAll(dateOriginal[:7], ":", "-")
+				// 	if prefixDate != filepath.Base(filepath.Dir(s))[:7] {
+				// 		fmt.Printf(" - [%s] >> %s\\%s\n", prefixDate, filepath.Base(filepath.Dir(s)), d.Name())
+				// 	}
+				// }
+
+				if flag.IsList {
+					fmt.Printf("   [%s] >> %s\\%s\n", prefixDate, filepath.Base(filepath.Dir(s)), d.Name())
+				}
+
+				if flag.IsWrite {
+					writeOriginalDate(fileInfo, dateOriginal)
 				}
 			}
-			if flag.Write {
+			if flag.IsWrite {
 				et.WriteMetadata(fileInfos)
+				for _, fileInfo := range fileInfos {
+					if fileInfo.Err != nil {
+						fmt.Printf("   X %v: %v\n", fileInfo.File, fileInfo.Err)
+						continue
+					}
+				}
 			}
 			// if slices.Contains(allowExt, strings.ToLower(path.Ext(s))) {
 			// 	println(s)
 			// } else {
 			// 	println(s)
 			// }
-		} else if flag.Write {
-			fmt.Printf(" > scan %s\n", filepath.Base(s))
+		} else if flag.IsWrite || flag.IsList && d.IsDir() {
+			fmt.Printf(" > %s\n", filepath.Base(s))
 		}
 		return nil
 	}
@@ -171,20 +221,54 @@ func walk(et *exiftool.Exiftool) func(s string, d fs.DirEntry, err error) error 
 // 	}
 // }
 
-func printOriginalDate(fileInfos []exiftool.FileMetadata) {
-	for _, fileInfo := range fileInfos {
+func writeOriginalDate(fileInfo *exiftool.FileMetadata, dateOriginal string) {
+	for k := range fileInfo.Fields {
+		if strings.Contains(k, "Date") {
+			fileInfo.SetString(k, dateOriginal)
+			fileInfo.Fields[k] = dateOriginal
+		}
+	}
+	fileInfo.SetString("DateTimeOriginal", dateOriginal)
+	fileInfo.Fields["DateTimeOriginal"] = dateOriginal
+}
+
+func extractOneFileOriginalDate(et *exiftool.Exiftool, fileInfos []exiftool.FileMetadata, flagDate string) {
+	for i := range fileInfos {
+		fileInfo := &fileInfos[i]
 		if fileInfo.Err != nil {
 			fmt.Printf("- %v: %v\n", fileInfo.File, fileInfo.Err)
 			continue
 		}
+		var (
+			dateOriginal string
+			keyDate      string = "ManualDate"
+		)
+		if flagDate == "" {
+			keyDate, dateOriginal = getOriginalDate(fileInfo.Fields)
+		} else {
+			dateOriginal = flagDate
+		}
 
+		if flag.IsWrite {
+			writeOriginalDate(fileInfo, dateOriginal)
+		}
 		for k, v := range fileInfo.Fields {
 			if strings.Contains(k, "Date") {
 				fmt.Printf("  - %v = %s\n", v, k)
 			}
 		}
-		keyDate, dateOriginal := getOriginalDate(fileInfo.Fields)
-		fmt.Printf("- [%s]%v >> %s\n", keyDate, dateOriginal, path.Base(fileInfo.File))
+
+		fmt.Printf("fill is %s: %v > %s\n", keyDate, dateOriginal, filepath.Base(fileInfo.File))
+	}
+
+	if flag.IsWrite {
+		et.WriteMetadata(fileInfos)
+		for _, fileInfo := range fileInfos {
+			if fileInfo.Err != nil {
+				fmt.Printf("   X %v: %v\n", fileInfo.File, fileInfo.Err)
+				continue
+			}
+		}
 	}
 }
 
@@ -230,6 +314,12 @@ func getOriginalDate(Fields map[string]interface{}) (string, string) {
 	}
 
 	k = "SubSecCreateDate"
+	val, ok = Fields[k].(string)
+	if ok && checkValDate(val) {
+		return k, parseOriginalDate(val)
+	}
+
+	k = "ProfileDateTime"
 	val, ok = Fields[k].(string)
 	if ok && checkValDate(val) {
 		return k, parseOriginalDate(val)
