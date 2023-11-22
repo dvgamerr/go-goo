@@ -52,7 +52,7 @@ func (d *Downloader) getFolderPath(subdir string, item *photoslibrary.MediaItem)
 	t, err := time.Parse(time.RFC3339, item.MediaMetadata.CreationTime)
 	if err != nil {
 		//Default to an epoch if cannot parse time
-		t, err = time.Parse(time.RFC3339, "1970-01-01T00:00:00Z")
+		t, _ = time.Parse(time.RFC3339, "1970-01-01T00:00:00Z")
 	}
 	return filepath.Join(d.Options.BackupFolder, subdir, t.Format(d.Options.FolderFormat))
 }
