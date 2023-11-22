@@ -1,4 +1,4 @@
-package main
+package meta
 
 import (
 	"fmt"
@@ -28,8 +28,11 @@ type Options struct {
 
 var flag Options
 
-func main() {
+func Run(dirpath string) {
 	arg.MustParse(&flag)
+	if dirpath != "" {
+		flag.Dir = dirpath
+	}
 	flagDirName, err := filepath.Abs(flag.Dir)
 	if err != nil {
 		log.Fatal(err)

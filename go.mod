@@ -26,5 +26,4 @@ require (
 	golang.org/x/time v0.4.0 // indirect
 	google.golang.org/api v0.151.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
