@@ -6,7 +6,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fujiwara/shapeio v1.0.0
 	github.com/gphotosuploader/googlemirror v0.5.0
-	golang.org/x/net v0.18.0
+	golang.org/x/net v0.23.0
 	golang.org/x/oauth2 v0.14.0
 	golang.org/x/sync v0.5.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
